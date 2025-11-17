@@ -329,6 +329,35 @@ public class CartographerPlugin extends ProgramPlugin {
 
         // Add the action to the tool
         tool.addAction(coverageAction);
+
+
+
+        DockingAction clearAction = new DockingAction("Clear Coverage Data Cache", getName()) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                ccFunctionMapCache = new HashMap<>();
+                Utils.showInfo("Cleared code coverage data Cache.");
+            }
+        };
+
+        // Enable the action
+        clearAction.setEnabled(true);
+
+        // Make it selectable in the "Tools" menu
+        clearAction.setMenuBarData(new MenuData(
+            new String[] {                      // Menu Path
+                ToolConstants.MENU_TOOLS,
+                TOOL_GROUP_NAME,
+                "Clear Coverage Data Cache"
+            },
+            null,                               // Icon
+            TOOL_GROUP_ID,                      // Menu Group
+            MenuData.NO_MNEMONIC,               // Mnemonic
+            "2"                                 // Menu Subgroup
+        ));
+
+        // Add the action to the tool
+        tool.addAction(clearAction);
     }
 
     /**
@@ -564,6 +593,7 @@ public class CartographerPlugin extends ProgramPlugin {
         // Populate the coverage function blocks
         file.populateBlocks(currentProgram);
 
+
         // Only run if current function exists under the cursor
         if (currentFunction != null) {
 
@@ -603,6 +633,7 @@ public class CartographerPlugin extends ProgramPlugin {
         }
 
         ccFunctionMapCache = file.getCoverageFunctions();
+
 
         // Set the selected file for the provider
         provider.setSelectedFile(file);
@@ -681,4 +712,5 @@ public class CartographerPlugin extends ProgramPlugin {
     public static Map<Integer, CoverageFile> getLoadedFiles() {
         return loadedFiles;
     }
+
 }
