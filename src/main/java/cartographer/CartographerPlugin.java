@@ -97,6 +97,10 @@ public class CartographerPlugin extends ProgramPlugin {
     // Loaded code coverage files
     private static Map<Integer, CoverageFile> loadedFiles = new HashMap<>();
 
+    private Map<Function, CoverageFunction> ccFunctionMapCache = new HashMap<>();
+
+
+
     // Name of preference group for better file loading
     private static final String LAST_IMPORT_CODE_COVERAGE_DIRECTORY = "LastImportCodeCoverageDirectory";
 
@@ -481,13 +485,22 @@ public class CartographerPlugin extends ProgramPlugin {
         // Allow UI updates
         Swing.allowSwingToProcessEvents();
 
-        // Populate the function map
-        FunctionIterator fnIter = currentProgram.getFunctionManager().getFunctions(true);
-        while (fnIter.hasNext()) {
-            Function curFunc = fnIter.next();
-            CoverageFunction ccFunc = new CoverageFunction(curFunc);
-            file.addCoverageFunction(curFunc, ccFunc);
-            provider.add(ccFunc);
+        if (ccFunctionMapCache.isEmpty()) {
+            // Populate the function map
+            FunctionIterator fnIter = currentProgram.getFunctionManager().getFunctions(true);
+            while (fnIter.hasNext()) {
+                Function curFunc = fnIter.next();
+                CoverageFunction ccFunc = new CoverageFunction(curFunc);
+                file.addCoverageFunction(curFunc, ccFunc);
+                provider.add(ccFunc);
+            }
+        } else {
+            for (CoverageFunction ccFunc : ccFunctionMapCache.values()) {
+                CoverageFunction newCcFunc = new CoverageFunction(ccFunc);
+                newCcFunc.clearCoverage();
+                file.addCoverageFunction(newCcFunc.getFunction(), newCcFunc);
+                provider.add(newCcFunc);
+            }
         }
 
         // Get the current address in the program
@@ -583,10 +596,13 @@ public class CartographerPlugin extends ProgramPlugin {
             return false;
         }
 
+
         // Load the coverage file data
         if (!loadCoverageFile(file)) {
             return false;
         }
+
+        ccFunctionMapCache = file.getCoverageFunctions();
 
         // Set the selected file for the provider
         provider.setSelectedFile(file);

@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * Represents a function with populated code coverage data.
  */
-public class CoverageFunction {
+public class CoverageFunction{
 
     private Function function;
     private Address entryPoint;
@@ -105,10 +105,16 @@ public class CoverageFunction {
     public void process() {
 
         // Reset code coverage counts
-        totalBlocks = 0;
         blocksHit.clear();
-        totalInstructions = 0;
         instructionsHit = 0;
+
+        if (ccBlockEntries.isEmpty() && totalBlocks > 0 && totalInstructions > 0) {
+            processed = true;
+            return;
+        }
+
+        totalBlocks = 0;
+        totalInstructions = 0;
 
         Program fnProgram = function.getProgram();
         CodeBlockModel blockModel = new SimpleBlockModel(fnProgram);
@@ -210,6 +216,16 @@ public class CoverageFunction {
     public void addCoverageBlock(Address address, Integer size) {
         ccBlockEntries.put(address, size);
     }
+
+    /**
+     * Clears the stored coverage data for the function.
+     */
+    public void clearCoverage() {
+        ccBlockEntries.clear();
+        blocksHit.clear();
+        instructionsHit = 0;
+        processed = false;
+    }
     
     /**
      * Gets the total number of basic blocks in the function.
@@ -283,6 +299,7 @@ public class CoverageFunction {
         return functionSize;
     }
     
+
     /**
      * Checks whether the coverage function has been processed.
      * 
